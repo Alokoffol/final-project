@@ -1,4 +1,11 @@
 name: Run All Tests with Allure Report
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+  
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 on:
   push:
@@ -67,22 +74,20 @@ jobs:
           ref: gh-pages
           path: gh-pages
 
+      - name: Install Allure
+        run: |
+          sudo apt-add-repository ppa:qameta/allure -y
+          sudo apt-get update
+          sudo apt-get install allure
+
       - name: Generate Allure Report
-        uses: simple-elf/allure-report-action@v1.9
-        if: always()
-        id: allure-report
-        with:
-          allure_results: allure-results
-          gh_pages: gh-pages
-          allure_report: allure-report
-          allure_history: allure-history
-          keep_reports: 20
+        run: |
+          allure generate --clean -o allure-report allure-results
 
       - name: Deploy report to GitHub Pages
-        if: always()
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
-          publish_dir: allure-history
+          publish_dir: allure-report
           keep_files: true

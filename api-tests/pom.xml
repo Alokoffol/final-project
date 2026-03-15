@@ -96,7 +96,6 @@
                     <threadCount>4</threadCount>
                     <perCoreThreadCount>false</perCoreThreadCount>
                     <redirectTestOutputToFile>false</redirectTestOutputToFile>
-                    <!-- Добавь это: -->
                     <systemPropertyVariables>
                         <allure.results.directory>${project.build.directory}/allure-results</allure.results.directory>
                     </systemPropertyVariables>
