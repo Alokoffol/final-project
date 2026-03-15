@@ -44,12 +44,12 @@ jobs:
         continue-on-error: true  # продолжаем, даже если модуль упал
 
       - name: Upload Allure results for ${{ matrix.module }}
-        if: always()
+        if: always() && matrix.module != 'common' && matrix.module != 'unit-tests' && matrix.module != 'db-tests'
         uses: actions/upload-artifact@v4
         with:
           name: allure-results-${{ matrix.module }}
           path: ${{ matrix.module }}/target/allure-results
-          if-no-files-found: warn
+          if-no-files-found: ignore
           retention-days: 7
 
   allure-report:
