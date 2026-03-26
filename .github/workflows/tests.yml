@@ -2,140 +2,119 @@
 # Цель: Автоматически запускать тесты при пуше/PR и публиковать Allure отчет
 # Имя workflow, которое отображается в интерфейсе GitHub Actions
 name: Run All Tests with Allure Report
+
 # ПРАВА ДОСТУПА (Permissions)
 permissions:
-  contents: write # Право на запись в репозиторий (для пуша отчета)
-  pages: write # Право на деплой на GitHub Pages
-  id-token: write # Право на создание токена для Pages
+  contents: write      # Право на запись в репозиторий (для пуша отчета)
+  pages: write         # Право на деплой на GitHub Pages
+  id-token: write      # Право на создание токена для Pages
 
 # ПЕРЕМЕННЫЕ ОКРУЖЕНИЯ (Environment Variables)
 env:
   # Форсируем использование Node.js 24 для всех JavaScript actions
-  # Решает проблемы с устаревшими версиями Node.js
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 # ТРИГГЕРЫ ЗАПУСКА (Triggers)
 on:
-  push: # Запуск при пуше в ветки main или master
+  push:                 # Запуск при пуше в ветки main или master
     branches: [ main, master ]
-  pull_request: # Запуск при создании PR в main/master
+  pull_request:         # Запуск при создании PR в main/master
     branches: [ main, master ]
-  workflow_dispatch:  # возможность запустить вручную
+  workflow_dispatch:    # возможность запустить вручную
 
 # JOB: test - Запуск тестов по модулям
 jobs:
   test:
-    runs-on: ubuntu-latest # Используем последнюю версию Ubuntu
-    # СТРАТЕГИЯ МАТРИЦЫ (Matrix Strategy)
-    # Позволяет запускать тесты для каждого модуля параллельно
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        # Список модулей, которые нужно протестировать
         module: [common, api-tests, ui-tests, unit-tests, db-tests]
-      fail-fast: false  # не останавливать другие модули при падении одного (Важно: если api упал, ui всё равно запустится)
+      fail-fast: false
 
     steps:
-      # ШАГ 1: Клонирование кода
       - name: Checkout code
-        uses: actions/checkout@v4 # Скачивает весь код репозитория (@v4 - последняя стабильная версия action)
+        uses: actions/checkout@v4
 
-      # ШАГ 2: Установка Java 11
       - name: Set up JDK 11
         uses: actions/setup-java@v4
         with:
-          java-version: '11' # Версия Java для проекта
-          distribution: 'temurin' # Дистрибутив OpenJDK от Eclipse
+          java-version: '11'
+          distribution: 'temurin'
 
-      # ШАГ 3: Кэширование Maven зависимостей
       - name: Cache Maven dependencies
         uses: actions/cache@v4
         with:
-          path: ~/.m2 # Путь к локальному репозиторию Maven
+          path: ~/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-          # Ключ кэша: ОС + версия + хеш всех pom.xml
           restore-keys: ${{ runner.os }}-m2
-          # Если точного совпадения нет - используем последний кэш
 
-      # ШАГ 4: Запуск тестов для конкретного модуля
       - name: Run ${{ matrix.module }} tests
         run: mvn clean test -pl ${{ matrix.module }}
-        # -pl: --projects - запускает только указанный модуль
-        # clean: очищает target перед запуском
-        # test: выполняет тесты
-        continue-on-error: true  # продолжаем, даже если модуль упал
+        continue-on-error: true
 
-      # ШАГ 5: Сохранение результатов Allure (артефактов)
       - name: Upload Allure results for ${{ matrix.module }}
         if: always() && matrix.module != 'common' && matrix.module != 'unit-tests' && matrix.module != 'db-tests'
-        # Условия загрузки:
-        # - always(): загружаем даже если тесты упали
-        # - исключаем модули, которые не генерируют Allure отчеты
         uses: actions/upload-artifact@v4
         with:
-          name: allure-results-${{ matrix.module }} # Уникальное имя для каждого модуля
-          path: ${{ matrix.module }}/target/allure-results # Путь к результатам
-          if-no-files-found: ignore # Не падать, если файлов нет
-          retention-days: 7 # Хранить артефакты 7 дней
+          name: allure-results-${{ matrix.module }}
+          path: ${{ matrix.module }}/target/allure-results
+          if-no-files-found: ignore
+          retention-days: 7
 
   # JOB: allure-report - Генерация и публикация Allure отчета
-  # Этот job зависит от job 'test' (needs: test)
-  # Запускается после завершения всех тестов
   allure-report:
-    needs: test  # Ждем завершения всех тестов
-    if: always() # Запускаем даже если тесты упали
+    needs: test
+    if: always()
     runs-on: ubuntu-latest
+
     steps:
-      # ШАГ 1: Клонирование кода
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # ШАГ 2: Скачивание всех артефактов с результатами
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
-          path: allure-results # Куда сохраняем
-          merge-multiple: true # Объединяем все артефакты в одну папку
-
-      # ШАГ 3: Получение истории отчетов из ветки gh-pages
+          path: allure-results
+          merge-multiple: true
 
       - name: Get Allure history
         uses: actions/checkout@v4
-        if: always() # Запускаем даже при ошибках
-        continue-on-error: true # Не падаем, если ветки еще нет
+        if: always()
+        continue-on-error: true
         with:
-          ref: gh-pages # Специальная ветка для GitHub Pages
-          path: gh-pages # Сохраняем в папку gh-pages
+          ref: gh-pages
+          path: gh-pages
 
       # ШАГ 4: Установка Allure командной строки
       - name: Install Allure
         run: |
-      # Обновляем список пакетов
-         sudo apt-get update
-      # Устанавливаем wget для скачивания
-         sudo apt-get install -y wget
-      # Скачиваем Allure 2.24.0
-         wget https://github.com/allure-framework/allure2/releases/download/2.24.0/allure_2.24.0-1_all.deb
-      # Устанавливаем пакет
-         sudo dpkg -i allure_2.24.0-1_all.deb
-      # Устанавливаем зависимости, если нужно
-         sudo apt-get install -f
-      # Проверяем версию
-         allure --version
+          # Обновляем список пакетов
+          sudo apt-get update
+          # Устанавливаем wget для скачивания
+          sudo apt-get install -y wget
+          # Скачиваем Allure 2.24.0
+          wget https://github.com/allure-framework/allure2/releases/download/2.24.0/allure_2.24.0-1_all.deb
+          # Устанавливаем пакет
+          sudo dpkg -i allure_2.24.0-1_all.deb
+          # Устанавливаем зависимости, если нужно
+          sudo apt-get install -f
+          # Проверяем версию
+          allure --version
 
       # ШАГ 5: Генерация Allure отчета
       - name: Generate Allure Report
         run: |
-      # allure generate: генерирует HTML отчет
-      # --clean: очищает старый отчет
-      # -o allure-report: папка для отчета
-      # allure-results: папка с результатами тестов
-         allure generate --clean -o allure-report allure-results
+          # allure generate: генерирует HTML отчет
+          # --clean: очищает старый отчет
+          # -o allure-report: папка для отчета
+          # allure-results: папка с результатами тестов
+          allure generate --clean -o allure-report allure-results
 
       # ШАГ 6: Деплой отчета на GitHub Pages
       - name: Deploy report to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }} # Токен доступа
-          publish_branch: gh-pages # Ветка для Pages
-          publish_dir: allure-report # Что публикуем
-          keep_files: true # Сохраняем историю
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: allure-report
+          keep_files: true
