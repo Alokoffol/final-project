@@ -21,14 +21,15 @@
 
 ## 📁 Структура проекта
 
+```text
 MavenMulti-moduleProject/
-├── common/ # Общие модели, утилиты, сервисы
-├── api/ # API тесты (REST Assured)
-├── ui/ # UI тесты (Selenium, Page Object)
-├── db-tests/ # Интеграционные тесты (Testcontainers, PostgreSQL)
-├── unit-tests/ # Unit тесты (JUnit, Mockito)
-├── .github/workflows/ # GitHub Actions CI/CD
-└── pom.xml # Родительский POM (Maven)
+├── common/               # Общие модели, утилиты, сервисы
+├── api/                  # API тесты (REST Assured)
+├── ui/                   # UI тесты (Selenium, Page Object)
+├── db-tests/             # Интеграционные тесты (Testcontainers, PostgreSQL)
+├── unit-tests/           # Unit тесты (JUnit, Mockito)
+├── .github/workflows/    # GitHub Actions CI/CD
+└── pom.xml               # Родительский POM (Maven)
 
 ## Запуск тестов
 
