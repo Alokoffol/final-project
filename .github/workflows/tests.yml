@@ -64,6 +64,8 @@ jobs:
           restore-keys: ${{ runner.os }}-m2
       - name: Run ${{ matrix.module }} tests
         run: mvn clean test -pl ${{ matrix.module }} -am
+        env:
+          HEADLESS: "true"   # Включаем headless для UI тестов
         continue-on-error: true
       - name: Upload Allure results for ${{ matrix.module }}
         if: always()
@@ -131,3 +133,10 @@ jobs:
           publish_branch: gh-pages
           publish_dir: allure-report
           keep_files: true
+
+      # Для запуска ui тестов без отображения
+      - name: Run ${{ matrix.module }} tests
+        run: mvn clean test -pl ${{ matrix.module }} -am
+        env:
+          HEADLESS: "true"   # Принудительно включаем headless для UI тестов
+        continue-on-error: true
