@@ -109,27 +109,27 @@ jobs:
       # ШАГ 4: Установка Allure командной строки
       - name: Install Allure
         run: |
-          // Обновляем список пакетов
-          sudo apt-get update
-          // Устанавливаем wget для скачивания
-          sudo apt-get install -y wget
-          // Скачиваем Allure 2.24.0
-          wget https://github.com/allure-framework/allure2/releases/download/2.24.0/allure_2.24.0-1_all.deb
-          // Устанавливаем пакет
-          sudo dpkg -i allure_2.24.0-1_all.deb
-          // Устанавливаем зависимости, если нужно
-          sudo apt-get install -f
-          // Проверяем версию
-          allure --version
+      # Обновляем список пакетов
+         sudo apt-get update
+      # Устанавливаем wget для скачивания
+         sudo apt-get install -y wget
+      # Скачиваем Allure 2.24.0
+         wget https://github.com/allure-framework/allure2/releases/download/2.24.0/allure_2.24.0-1_all.deb
+      # Устанавливаем пакет
+         sudo dpkg -i allure_2.24.0-1_all.deb
+      # Устанавливаем зависимости, если нужно
+         sudo apt-get install -f
+      # Проверяем версию
+         allure --version
 
       # ШАГ 5: Генерация Allure отчета
       - name: Generate Allure Report
         run: |
-          // allure generate: генерирует HTML отчет
-          // --clean: очищает старый отчет
-          // -o allure-report: папка для отчета
-          // allure-results: папка с результатами тестов
-          allure generate --clean -o allure-report allure-results
+      # allure generate: генерирует HTML отчет
+      # --clean: очищает старый отчет
+      # -o allure-report: папка для отчета
+      # allure-results: папка с результатами тестов
+         allure generate --clean -o allure-report allure-results
 
       # ШАГ 6: Деплой отчета на GitHub Pages
       - name: Deploy report to GitHub Pages
