@@ -126,8 +126,7 @@ public class TestDataGenerator {
         );
     }
 
-    // ===== Petstore models =====
-
+   // Генерация Пет
     public static Map<String, Object> generatePet(String name, String status) {
         Map<String, Object> pet = new HashMap<>();
         pet.put("id", 0); // 0 = сервер назначит сам
@@ -157,6 +156,7 @@ public class TestDataGenerator {
         return generatePet(name, status);
     }
 
+    // Генерация заказа
     public static Map<String, Object> generateOrder(long petId) {
         Map<String, Object> order = new HashMap<>();
         order.put("id", 0);
@@ -168,6 +168,7 @@ public class TestDataGenerator {
         return order;
     }
 
+    // Генерация пользователя
     public static Map<String, Object> generateUser(String username) {
         Map<String, Object> user = new HashMap<>();
         user.put("id", 0);

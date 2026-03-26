@@ -19,7 +19,7 @@ public class PetSerializationTest extends ApiBaseTest {
     public void testPetSerialization() {
         logStep("1. Создаём объект Pet через генератор");
 
-        // СЕРИАЛИЗАЦИЯ: объект Pet → JSON
+        // СЕРИАЛИЗАЦИЯ: объект Pet в JSON
         Pet newPet = TestDataGenerator.generateRandomPetAsObject();
         logStep("Создан объект: " + newPet);
 
@@ -28,12 +28,12 @@ public class PetSerializationTest extends ApiBaseTest {
                 .given()
                 .log().all()
                 .contentType("application/json")
-                .body(newPet)  // ← Pet автоматически превратится в JSON
+                .body(newPet)  //Pet автоматически превратится в JSON
                 .post("/pet");
 
         assertEquals(200, response.statusCode());
 
-        // ДЕСЕРИАЛИЗАЦИЯ: JSON → объект Pet
+        // ДЕСЕРИАЛИЗАЦИЯ: JSON в объект Pet
         Pet createdPet = response.as(Pet.class);
         logStep("Получен объект из ответа: " + createdPet);
 

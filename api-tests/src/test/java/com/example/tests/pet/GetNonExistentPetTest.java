@@ -22,7 +22,7 @@ public class GetNonExistentPetTest extends ApiBaseTest {
                 .log().all()
                 .get("/pet/9999999999");
 
-        int statusCode = response.statusCode();  // ← объявляем здесь
+        int statusCode = response.statusCode();
 
         assertTrue("Статус должен быть 404 или 200",
                 statusCode == 404 || statusCode == 200);

@@ -1,20 +1,26 @@
 package com.example.repository;
 
 import com.example.models.unit.User;
-
 import java.sql.*;
 
+// Реализация репозитория пользователей с использованием JDBC
 public class UserRepositoryImpl implements UserRepository {
 
-    private final Connection connection;
+    private final Connection connection; // JDBC соединение, передается через конструктор
 
     public UserRepositoryImpl(Connection connection) {
         this.connection = connection;
     }
 
+    /*
+     - Поиск пользователя по email.
+     - Использует PreparedStatement для защиты от SQL инъекций.
+     */
     @Override
     public User findByEmail(String email) {
         String sql = "SELECT * FROM users WHERE email = ?";
+
+        // try-with-resources автоматически закрывает stmt и rs
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setString(1, email);
             ResultSet rs = stmt.executeQuery();
@@ -28,11 +34,13 @@ public class UserRepositoryImpl implements UserRepository {
         return null;
     }
 
+    // Сохранение нового пользователя.
     @Override
     public void save(User user) {
         String sql = "INSERT INTO users (email, password, first_name, last_name, phone, active, created_at, updated_at) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
+        // RETURN_GENERATED_KEYS позволяет получить ID, который БД создала автоматически
         try (PreparedStatement stmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setString(1, user.getEmail());
             stmt.setString(2, user.getPassword());
@@ -55,6 +63,10 @@ public class UserRepositoryImpl implements UserRepository {
         }
     }
 
+    /*
+     - Обновление существующего пользователя.
+     - Все поля обновляются, кроме ID (используется в WHERE).
+     */
     @Override
     public void update(User user) {
         String sql = "UPDATE users SET email = ?, password = ?, first_name = ?, last_name = ?, " +
@@ -76,6 +88,7 @@ public class UserRepositoryImpl implements UserRepository {
         }
     }
 
+    // Удаление пользователя по ID.
     @Override
     public void delete(int id) {
         String sql = "DELETE FROM users WHERE id = ?";
@@ -87,6 +100,7 @@ public class UserRepositoryImpl implements UserRepository {
         }
     }
 
+    // Преобразование строки ResultSet в объект User.
     private User mapRowToUser(ResultSet rs) throws SQLException {
         User user = new User();
         user.setId(rs.getInt("id"));

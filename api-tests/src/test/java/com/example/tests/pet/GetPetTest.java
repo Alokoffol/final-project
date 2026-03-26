@@ -18,7 +18,7 @@ public class GetPetTest extends ApiBaseTest {
     public void testCreateAndGetPet() {
         logStep("1. Создаём питомца");
 
-        // 1. Создаём питомца
+        // Создаём питомца
         Map<String, Object> newPet = TestDataGenerator.generateRandomPet();
         Response createResponse = RestAssured
                 .given()
@@ -30,7 +30,7 @@ public class GetPetTest extends ApiBaseTest {
         long petId = createResponse.jsonPath().getLong("id");
         logStep("Питомец создан с ID: " + petId);
 
-        // 2. Получаем этого же питомца
+        // Получаем этого же питомца
         logStep("2. Получаем питомца с ID: " + petId);
 
         Response getResponse = RestAssured

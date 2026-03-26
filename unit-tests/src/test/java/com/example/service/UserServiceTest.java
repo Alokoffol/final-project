@@ -15,32 +15,39 @@ import static org.mockito.Mockito.*;
 public class UserServiceTest {
 
     @Mock
-    private UserRepository userRepository;  // создаём мок репозитория
+    private UserRepository userRepository;  // Мок репозитория (не ходим в БД)
 
     @Mock
-    private EmailService emailService;      // создаём мок email-сервиса
+    private EmailService emailService;      // Мок email-сервиса (не отправляем реальные письма)
 
     @InjectMocks
-    private UserService userService;        // создаём реальный сервис и ВНЕДРЯЕМ в него моки
+    private UserService userService;        // Тестируемый класс, моки внедряются автоматически
 
+    // Пользователь с таким email еще не зарегистрирован.
     @Test
     public void testRegisterUser_success() {
+        // GIVEN (Arrange) - подготовка данных
         String email = "new@example.com";
 
+        // Настраиваем мок: пользователь с таким email НЕ найден
         when(userRepository.findByEmail(email)).thenReturn(null);
 
+        // WHEN (Act) - выполняем тестируемый метод
         boolean result = userService.registerUser(email);
 
+        // THEN (Assert) - проверяем результат
         assertTrue("Регистрация должна быть успешной", result);
 
         // Проверяем ВСЕ вызовы по порядку
-        verify(userRepository).findByEmail(email);          // 1. поиск
-        verify(userRepository).save(any(User.class));       // 2. сохранение
-        verify(emailService).sendWelcomeEmail(email);       // 3. email
+        verify(userRepository).findByEmail(email);          // Поиск пользователя
+        verify(userRepository).save(any(User.class));       // Сохранение нового пользователя
+        verify(emailService).sendWelcomeEmail(email);       // Отправка приветственного письма
 
-        verifyNoMoreInteractions(userRepository, emailService); // теперь можно
+        // Убеждаемся, что больше никаких вызовов не было
+        verifyNoMoreInteractions(userRepository, emailService);
     }
 
+    // Пользователь с таким email уже зарегистрирован.
     @Test
     public void testRegisterUser_userAlreadyExists() {
         // 1. Given (дано)
@@ -51,7 +58,7 @@ public class UserServiceTest {
         // Настраиваем мок: при поиске по этому email вернуть существующего пользователя
         when(userRepository.findByEmail(email)).thenReturn(existingUser);
 
-        // 2. When (когда)
+        // 2. When (Assert)
         boolean result = userService.registerUser(email);
 
         // 3. Then (тогда)
@@ -69,10 +76,11 @@ public class UserServiceTest {
         verifyNoMoreInteractions(userRepository, emailService);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    // Передан некорректный email (не содержит @)
+    @Test(expected = IllegalArgumentException.class) // Ожидаем, что тест упадет с этим исключением
     public void testRegisterUser_invalidEmail_shouldThrowException() {
         // 1. Given (дано)
-        String invalidEmail = "not-an-email";
+        String invalidEmail = "not-an-email"; // Невалидный email (нет символа @)
 
         // 2. When (когда) + Then (тогда)
         // Ожидаем, что метод выбросит IllegalArgumentException

@@ -29,7 +29,7 @@ public class UpdatePetTest extends ApiBaseTest {
         long petId = createResponse.jsonPath().getLong("id");
         logStep("Питомец создан с ID: " + petId);
 
-        // 2. Обновляем питомца
+        // Обновляем питомца
         logStep("2. Обновляем питомца");
 
         newPet.put("id", petId);
@@ -45,10 +45,9 @@ public class UpdatePetTest extends ApiBaseTest {
 
         assertEquals(200, updateResponse.statusCode());
 
-        // 3. Проверяем, что обновление прошло (или хотя бы сервер ответил 200)
+        // Проверяем, что обновление прошло
         logStep("3. Проверяем ответ сервера");
 
-        // Petstore может не сохранить изменения, но статус 200 — уже успех
         assertTrue("Обновление должно вернуть 200", true);
 
         attachResponse(updateResponse.asString());

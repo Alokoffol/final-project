@@ -18,6 +18,7 @@ public class DriverFactory {
         return new ChromeDriver(ChromeOptionsConfig.createChromeOptions(headless));
     }
 
+    // Выход из драйвера
     public static void quitDriver(WebDriver driver) {
         if (driver != null) {
             driver.quit();

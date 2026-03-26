@@ -22,14 +22,15 @@ import static org.mockito.Mockito.*;
 public class OrderServiceTest {
 
     @Mock
-    private OrderRepository orderRepository;
+    private OrderRepository orderRepository; // Мок репозитория (не ходим в БД)
 
     @Mock
-    private ProductService productService;
+    private ProductService productService; // Мок сервиса товаров
 
     @InjectMocks
-    private OrderService orderService;
+    private OrderService orderService; // Тестируемый класс, моки внедряются автоматически
 
+    // Успешное создания заказа
     @Test
     public void testCreateOrder_success() {
         // 1. Given (подготовка данных)
@@ -40,18 +41,18 @@ public class OrderServiceTest {
         product.setId(1);
         product.setName("Тестовый товар");
         product.setPrice(new BigDecimal("100.00"));
-        product.setStockQuantity(10);
+        product.setStockQuantity(10); // Доступно 10 штук
 
         // Создаём позицию заказа
         OrderItem item = new OrderItem();
         item.setProductId(1);
-        item.setQuantity(2);
+        item.setQuantity(2); // Заказываем 2 штуки
         item.setPrice(new BigDecimal("100.00"));
         item.calculateTotal(); // должно посчитать 200.00
 
         List<OrderItem> items = List.of(item);
 
-        // Настраиваем моки
+        // Настраиваем моки (говорим, что они должны вернуть при вызове)
         when(productService.getProductById(1)).thenReturn(Optional.of(product));
         when(productService.isProductInStock(1, 2)).thenReturn(true);
 
@@ -60,42 +61,44 @@ public class OrderServiceTest {
         savedOrder.setId(100);
         when(orderRepository.save(any(Order.class))).thenReturn(savedOrder);
 
-        // 2. When (выполняем тестируемый метод)
+        // WHEN (Act) - выполняем тестируемый метод
         Order result = orderService.createOrder(userId, items);
 
-        // 3. Then (проверяем)
+        // THEN (Assert) - проверяем результат
         assertNotNull(result);
         assertEquals(100, result.getId());
 
-        // Проверяем вызовы
+        // Проверяем, что все зависимости были вызваны нужное количество раз
         verify(productService).getProductById(1);
         verify(productService).isProductInStock(1, 2);
         verify(productService).decreaseStock(1, 2);
         verify(orderRepository).save(any(Order.class));
     }
 
-    @Test(expected = IllegalStateException.class)
+    // Создать заказ: товара нет в наличии
+    @Test(expected = IllegalStateException.class) // Ожидаем, что тест упадет с этим исключением
     public void testCreateOrder_productNotInStock() {
-        // 1. Given
+        // Given
         int userId = 1;
 
         OrderItem item = new OrderItem();
         item.setProductId(1);
-        item.setQuantity(5);
+        item.setQuantity(5); // Хотим 5 штук
 
         List<OrderItem> items = List.of(item);
 
-        // Настраиваем мок: товара нет в нужном количестве
+        // Мок: товара нет!
         when(productService.isProductInStock(1, 5)).thenReturn(false);
 
-        // 2. When + Then (ожидаем исключение)
+        // When + Then (исключение выбросится автоматически)
         orderService.createOrder(userId, items);
 
-        // Проверяем, что save НЕ вызывался
+        // Проверяем, что save НЕ вызывался (этот код выполнится только если исключение не выброшено)
         verify(orderRepository, never()).save(any(Order.class));
         verify(productService, never()).decreaseStock(anyInt(), anyInt());
     }
 
+    // В заказе несколько товаров, проверяем сумму с учетом налога 20%
     @Test
     public void testCreateOrder_calculateTotalWithTax() {
         // 1. Given
@@ -132,22 +135,25 @@ public class OrderServiceTest {
         when(productService.isProductInStock(1, 2)).thenReturn(true);
         when(productService.isProductInStock(2, 3)).thenReturn(true);
 
-        // Захватываем сохранённый заказ для проверки
+        // Перехватываем сохраняемый заказ для проверки
         when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> {
             Order order = invocation.getArgument(0);
             order.setId(200); // присваиваем ID
             return order;
         });
 
-        // 2. When
+        // When
         Order result = orderService.createOrder(userId, items);
 
-        // 3. Then
+        // Then
         assertNotNull(result);
 
         // Ожидаемые суммы
+        // Субтотал (без налога): 200.00 + 151.50 = 351.50
         BigDecimal expectedSubtotal = new BigDecimal("200.00").add(new BigDecimal("151.50")); // 351.50
+        // Налог 20%: 351.50 × 0.20 = 70.30
         BigDecimal expectedTax = expectedSubtotal.multiply(new BigDecimal("0.20")); // 70.30
+        // Итог: 351.50 + 70.30 = 421.80
         BigDecimal expectedTotal = expectedSubtotal.add(expectedTax); // 421.80
 
         assertEquals(expectedTotal, result.getTotalAmount());
@@ -157,12 +163,14 @@ public class OrderServiceTest {
         BigDecimal calculatedTax = result.getTotalAmount().subtract(actualSubtotal);
         assertEquals(expectedTax, calculatedTax);
 
+        // Проверяем вызовы
         verify(productService, times(2)).getProductById(anyInt());
         verify(productService, times(2)).isProductInStock(anyInt(), anyInt());
         verify(productService).decreaseStock(1, 2);
         verify(productService).decreaseStock(2, 3);
     }
 
+    //Успешная отмена заказа
     @Test
     public void testCancelOrder_success() {
         // 1. Given
@@ -170,7 +178,7 @@ public class OrderServiceTest {
 
         Order order = new Order();
         order.setId(orderId);
-        order.setStatus(OrderStatus.NEW);
+        order.setStatus(OrderStatus.NEW); // Только NEW можно отменить
 
         when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
         when(orderRepository.save(any(Order.class))).thenReturn(order);
@@ -179,13 +187,14 @@ public class OrderServiceTest {
         boolean result = orderService.cancelOrder(orderId);
 
         // 3. Then
-        assertTrue(result);
-        assertEquals(OrderStatus.CANCELLED, order.getStatus());
+        assertTrue(result); // Отмена успешна
+        assertEquals(OrderStatus.CANCELLED, order.getStatus()); // Статус изменил
 
         verify(orderRepository).findById(orderId);
         verify(orderRepository).save(order);
     }
 
+    // Отмена уже выполненного заказа
     @Test
     public void testCancelOrder_alreadyCompleted() {
         // 1. Given
@@ -201,13 +210,14 @@ public class OrderServiceTest {
         boolean result = orderService.cancelOrder(orderId);
 
         // 3. Then
-        assertFalse(result);
+        assertFalse(result); // Отмена не удалась
         assertEquals(OrderStatus.COMPLETED, order.getStatus()); // статус не изменился
 
         verify(orderRepository).findById(orderId);
-        verify(orderRepository, never()).save(any(Order.class));
+        verify(orderRepository, never()).save(any(Order.class)); // Сохранения не было
     }
 
+    // Отмена несуществующего заказа
     @Test
     public void testCancelOrder_notFound() {
         // 1. Given
@@ -219,7 +229,7 @@ public class OrderServiceTest {
         boolean result = orderService.cancelOrder(orderId);
 
         // 3. Then
-        assertFalse(result);
+        assertFalse(result); // Не найден - отмена не удалась
 
         verify(orderRepository).findById(orderId);
         verify(orderRepository, never()).save(any(Order.class));

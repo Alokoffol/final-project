@@ -1,10 +1,22 @@
+<!--
+   Конфигурация логирования Logback
+   Файл: src/main/resources/logback.xml
+   Используется для логирования тестов и приложения
+-->
 <configuration>
+    <!--
+       Консольный аппендер - вывод в терминал
+       Удобен для локального запуска и отладки
+    -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
         </encoder>
     </appender>
-
+    <!--
+        Файловый аппендер - сохраняет логи в файл
+        Полезно для анализа после прогона тестов и для CI/CD
+    -->
     <appender name="FILE" class="ch.qos.logback.core.FileAppender">
         <file>logs/tests.log</file>
         <append>true</append>
@@ -12,11 +24,18 @@
             <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</pattern>
         </encoder>
     </appender>
-
+    <!--
+       Корневой уровень логирования
+       Все логи с уровнем INFO и выше попадают в CONSOLE и FILE
+    -->
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="FILE"/>
     </root>
-
+    <!--
+    Логи для пакета com.example
+    Уровень DEBUG - показываем детальную отладку
+    Полезно для трассировки выполнения тестов
+    -->
     <logger name="com.example" level="DEBUG"/>
 </configuration>

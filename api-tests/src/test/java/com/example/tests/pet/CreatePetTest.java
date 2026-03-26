@@ -20,10 +20,10 @@ public class CreatePetTest extends ApiBaseTest {
     public void testCreatePet() {
         logStep("Создание нового питомца через генератор");
 
-        // 1. Генерируем питомца
+        // Генерируем питомца
         Map<String, Object> pet = TestDataGenerator.generateRandomPet();
 
-        // 2. Отправляем запрос
+        // Отправляем запрос
         Response response = RestAssured
                 .given()
                 .log().all()

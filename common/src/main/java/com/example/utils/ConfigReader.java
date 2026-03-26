@@ -4,6 +4,12 @@ import java.util.Properties;
 import java.io.IOException;
 import java.io.InputStream;
 
+/*
+Загрузка конфигурации для разных окружений. Файлы конфигурации:
+ - config-dev.properties - локальная разработка
+ - config-test.properties - CI/CD (GitHub Actions)
+ - config-prod.properties - продакшн (защищенные ключи)
+ */
 public class ConfigReader {
     private static Properties properties;
     private static String environment;

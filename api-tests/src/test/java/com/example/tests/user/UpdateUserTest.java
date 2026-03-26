@@ -32,7 +32,7 @@ public class UpdateUserTest extends ApiBaseTest {
         assertEquals(200, createResponse.statusCode());
         logStep("Пользователь создан: " + username);
 
-        // 2. Получаем пользователя, чтобы узнать его ID
+        // Получаем пользователя, чтобы узнать его ID
         logStep("2. Получаем данные пользователя");
 
         Response getBeforeResponse = RestAssured
@@ -67,7 +67,7 @@ public class UpdateUserTest extends ApiBaseTest {
 
         assertEquals(200, updateResponse.statusCode());
 
-        // 4. Проверяем обновление
+        // Проверяем обновление
         logStep("4. Проверяем обновлённые данные");
 
         Response getAfterResponse = RestAssured

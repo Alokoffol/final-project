@@ -18,7 +18,7 @@ public class CreateOrderTest extends ApiBaseTest {
     public void testCreateOrder() {
         logStep("1. Создаём питомца для заказа");
 
-        // 1. Создаём питомца
+        // Создаём питомца
         Map<String, Object> newPet = TestDataGenerator.generateRandomPet();
         Response petResponse = RestAssured
                 .given()
@@ -30,7 +30,7 @@ public class CreateOrderTest extends ApiBaseTest {
         long petId = petResponse.jsonPath().getLong("id");
         logStep("Питомец создан с ID: " + petId);
 
-        // 2. Создаём заказ на этого питомца
+        // Создаём заказ на этого питомца
         logStep("2. Создаём заказ");
 
         Map<String, Object> newOrder = TestDataGenerator.generateOrder(petId);

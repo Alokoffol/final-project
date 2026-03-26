@@ -10,6 +10,9 @@ public class ChromeOptionsConfig {
     public static ChromeOptions createChromeOptions(boolean headless) {
         ChromeOptions options = new ChromeOptions();
 
+        /*
+        Решение проблемы с открывающимся окном
+         */
         // Отключаем проверку утечек паролей
         Map<String, Object> prefs = new HashMap<>();
         prefs.put("profile.password_manager_leak_detection.enabled", false);

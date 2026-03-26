@@ -35,7 +35,7 @@ public class UserRepositoryTest extends DbBaseTest {
 
     @Test
     public void testSaveAndFindByEmail() {
-        // 1. Создаём пользователя
+        // Создаём пользователя
         User user = new User();
         user.setEmail("test@example.com");
         user.setPassword("password123");
@@ -46,11 +46,11 @@ public class UserRepositoryTest extends DbBaseTest {
         user.setCreatedAt(LocalDateTime.now());
         user.setUpdatedAt(LocalDateTime.now());
 
-        // 2. Сохраняем
+        // Сохраняем
         userRepository.save(user);
         assertTrue("ID должен быть присвоен", user.getId() > 0);
 
-        // 3. Ищем по email
+        // Ищем по email
         User found = userRepository.findByEmail("test@example.com");
         assertNotNull(found);
         assertEquals(user.getEmail(), found.getEmail());
@@ -59,7 +59,7 @@ public class UserRepositoryTest extends DbBaseTest {
 
     @Test
     public void testUpdateUser() {
-        // 1. Создаём и сохраняем
+        // Создаём и сохраняем
         User user = new User();
         user.setEmail("update@example.com");
         user.setPassword("oldpass");
@@ -72,13 +72,13 @@ public class UserRepositoryTest extends DbBaseTest {
         userRepository.save(user);
         int userId = user.getId();
 
-        // 2. Обновляем
+        // Обновляем
         user.setFirstName("New");
         user.setLastName("Updated");
         user.setUpdatedAt(LocalDateTime.now());
         userRepository.update(user);
 
-        // 3. Проверяем
+        // Проверяем
         User updated = userRepository.findByEmail("update@example.com");
         assertEquals("New", updated.getFirstName());
         assertEquals("Updated", updated.getLastName());
@@ -86,7 +86,7 @@ public class UserRepositoryTest extends DbBaseTest {
 
     @Test
     public void testDeleteUser() {
-        // 1. Создаём
+        // Создаём
         User user = new User();
         user.setEmail("delete@example.com");
         user.setPassword("pass");
@@ -99,10 +99,10 @@ public class UserRepositoryTest extends DbBaseTest {
         userRepository.save(user);
         int userId = user.getId();
 
-        // 2. Удаляем
+        // Удаляем
         userRepository.delete(userId);
 
-        // 3. Проверяем, что нет в БД
+        // Проверяем, что нет в БД
         User found = userRepository.findByEmail("delete@example.com");
         assertNull(found);
     }

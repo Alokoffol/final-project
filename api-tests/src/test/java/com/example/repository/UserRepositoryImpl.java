@@ -1,18 +1,28 @@
 package com.example.repository;
 
 import com.example.models.unit.User;
-
 import java.sql.*;
-import java.util.Optional;
 
+/*
+ - Реализация репозитория для работы с пользователями в БД.
+ - Выполняет CRUD операции: поиск, сохранение, обновление, удаление.
+ - Использует JDBC для прямого взаимодействия с базой данных.
+ */
 public class UserRepositoryImpl implements UserRepository {
 
+    // JDBC соединение с БД
     private final Connection connection;
 
+    /*
+     - Конструктор принимает готовое соединение.
+     - Это позволяет использовать один и тот же connection для разных репозиториев
+     - и управлять транзакциями централизованно.
+     */
     public UserRepositoryImpl(Connection connection) {
         this.connection = connection;
     }
 
+    // Поиск пользователя по email.
     @Override
     public User findByEmail(String email) {
         String sql = "SELECT * FROM users WHERE email = ?";
@@ -29,6 +39,7 @@ public class UserRepositoryImpl implements UserRepository {
         return null;
     }
 
+    // Сохранение нового пользователя в БД.
     @Override
     public void save(User user) {
         String sql = "INSERT INTO users (email, password, first_name, last_name, phone, active, created_at, updated_at) " +
@@ -56,6 +67,7 @@ public class UserRepositoryImpl implements UserRepository {
         }
     }
 
+    // Обновление существующего пользователя.
     @Override
     public void update(User user) {
         String sql = "UPDATE users SET email = ?, password = ?, first_name = ?, last_name = ?, " +
@@ -77,6 +89,7 @@ public class UserRepositoryImpl implements UserRepository {
         }
     }
 
+    // Удаление пользователя по ID.
     @Override
     public void delete(int id) {
         String sql = "DELETE FROM users WHERE id = ?";
@@ -88,6 +101,11 @@ public class UserRepositoryImpl implements UserRepository {
         }
     }
 
+
+    /*
+    - Маппинг строки ResultSet в объект User
+    - Вынесен в отдельный метод для переиспользования.
+    */
     private User mapRowToUser(ResultSet rs) throws SQLException {
         User user = new User();
         user.setId(rs.getInt("id"));

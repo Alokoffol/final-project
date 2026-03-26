@@ -20,7 +20,7 @@ public class LoginLogoutTest extends ApiBaseTest {
     public void testLoginAndLogout() {
         logStep("1. Создаём пользователя");
 
-        // 1. Создаём пользователя
+        // Создаём пользователя
         Map<String, Object> newUser = TestDataGenerator.generateRandomUser();
         String username = (String) newUser.get("username");
         String password = (String) newUser.get("password");
@@ -34,7 +34,7 @@ public class LoginLogoutTest extends ApiBaseTest {
         assertEquals(200, createResponse.statusCode());
         logStep("Пользователь создан: " + username);
 
-        // 2. Логинимся
+        // Логинимся
         logStep("2. Логин в систему");
 
         Response loginResponse = RestAssured
@@ -61,7 +61,7 @@ public class LoginLogoutTest extends ApiBaseTest {
             logStep("Получена сессия: " + sessionId);
         }
 
-        // 3. Логаут
+        // Логаут
         logStep("3. Логаут из системы");
 
         Response logoutResponse = RestAssured
